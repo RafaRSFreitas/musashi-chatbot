@@ -31,6 +31,34 @@ export default function App() {
     setMessages([welcomeMessage]);
   }, []); // <--- The empty array [] means "Only run this ONE time"
 
+// 1. Handle typing in the input box
+  const handleInputChange = (e) => {
+    setInputText(e.target.value);
+  };
+
+  // 2. Handle sending the message
+  const handleSendMessage = () => {
+    // Prevent sending empty messages
+    if (!inputText.trim()) return;
+
+    // Create the User's message object
+    const userMessage = {
+      id: Date.now(),
+      text: inputText,
+      type: 'user',
+      timestamp: new Date().toLocaleTimeString()
+    };
+
+    // Update the message history (Keep old messages + add new one)
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
+
+    // Clear the input field
+    setInputText('');
+    
+    // Set loading state (we'll use this later for the bot response)
+    setIsLoading(true);
+  };
+
   return (
     <div style={{ 
       backgroundColor: '#1a1a1a', 
@@ -77,6 +105,49 @@ export default function App() {
             <small style={{ color: '#666', fontSize: '0.8rem' }}>{msg.timestamp}</small>
           </div>
         ))}
+      </div>
+    {/* Input Area */}
+      <div style={{ 
+        width: '100%', 
+        maxWidth: '600px', 
+        padding: '20px',
+        display: 'flex',
+        gap: '10px',
+        borderTop: '1px solid #333'
+      }}>
+        <input 
+          type="text" 
+          value={inputText}                 // 1. Controlled by State
+          onChange={handleInputChange}      // 2. Updates State
+          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()} // Allow pressing Enter
+          placeholder="Type your message..."
+          style={{
+            flex: 1,
+            padding: '12px',
+            borderRadius: '8px',
+            border: '1px solid #444',
+            backgroundColor: '#2b2b2b',
+            color: 'white',
+            outline: 'none'
+          }}
+        />
+        <button 
+          onClick={handleSendMessage}       // 3. Triggers the send logic
+          disabled={isLoading}              // Disable if waiting for bot
+          style={{
+            padding: '12px 20px',
+            borderRadius: '8px',
+            border: 'none',
+            backgroundColor: '#8b4513',
+            color: 'white',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          {isLoading ? '...' : <Send size={20} />}
+        </button>
       </div>
     </div>
   );
