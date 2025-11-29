@@ -1,47 +1,45 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Send, Menu, User, X, Trash2, History, MessageSquare } from 'lucide-react';
 
 export default function App() {
-  // 1. State for the conversation history (Array of objects)
+  // State for the app
   const [messages, setMessages] = useState([]);
-
-  // 2. State for the input box (What the user is typing)
   const [inputText, setInputText] = useState('');
-
-  // 3. State for loading status (Boolean)
   const [isLoading, setIsLoading] = useState(false);
-
-  // 4. State for the side menu (Open/Close)
   const [showMenu, setShowMenu] = useState(false);
-
-  // 5. State for login status (Mock login for now)
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // THE EFFECT: Run this once when the app starts
+  // used for scrolling to bottom
+  const messagesEndRef = useRef(null);
+
+  // Set initial welcome message
   useEffect(() => {
-    // 1. Create the welcome message object
     const welcomeMessage = {
       id: Date.now(),
       text: "I am Miyamoto Musashi. Ask me about strategy, philosophy, or the way of the sword.",
       type: 'bot',
       timestamp: new Date().toLocaleTimeString()
     };
-
-    // 2. Add it to our messages state
     setMessages([welcomeMessage]);
-  }, []); // <--- The empty array [] means "Only run this ONE time"
+  }, []);
 
-// 1. Handle typing in the input box
+  // scroll to bottom when messages change
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   const handleInputChange = (e) => {
     setInputText(e.target.value);
   };
 
-  // 2. Handle sending the message
-  const handleSendMessage = () => {
-    // Prevent sending empty messages
+  const handleSendMessage = async () => {
+    // don't send if empty
     if (!inputText.trim()) return;
 
-    // Create the User's message object
     const userMessage = {
       id: Date.now(),
       text: inputText,
@@ -49,14 +47,25 @@ export default function App() {
       timestamp: new Date().toLocaleTimeString()
     };
 
-    // Update the message history (Keep old messages + add new one)
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
-
-    // Clear the input field
+    // add user message
+    setMessages((prev) => [...prev, userMessage]);
     setInputText('');
-    
-    // Set loading state (we'll use this later for the bot response)
     setIsLoading(true);
+
+    // fake delay for the bot response
+    setTimeout(() => {
+      
+      const botResponse = {
+        id: Date.now() + 1,
+        text: "Hey there! (Mock answer while the API is not connected)",
+        type: 'bot',
+        timestamp: new Date().toLocaleTimeString()
+      };
+
+      setMessages((prev) => [...prev, botResponse]);
+      setIsLoading(false);
+
+    }, 1000); 
   };
 
   return (
@@ -76,10 +85,10 @@ export default function App() {
         width: '100%', 
         textAlign: 'center' 
       }}>
-        <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Miyamoto Musashi</h1>
+        <h1 style={{ margin: 0, fontSize: '1.5rem' }}>⚔️ Miyamoto Musashi</h1>
       </header>
 
-      {/* Chat Area */}
+      {/* Message List */}
       <div style={{ 
         flex: 1, 
         width: '100%', 
@@ -87,26 +96,32 @@ export default function App() {
         padding: '20px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '15px'
+        gap: '15px',
+        overflowY: 'auto'
       }}>
-        {/* Map through messages and display them */}
         {messages.map((msg) => (
           <div key={msg.id} style={{
-            backgroundColor: msg.type === 'user' ? '#2b2b2b' : '#3d2b1f', // Dark grey for user, brownish for Musashi
+            backgroundColor: msg.type === 'user' ? '#2b2b2b' : '#3d2b1f',
             padding: '15px',
             borderRadius: '10px',
-            borderLeft: msg.type === 'bot' ? '4px solid #8b4513' : 'none', // Brown accent for bot
-            borderRight: msg.type === 'user' ? '4px solid #4a4a4a' : 'none'
+            borderLeft: msg.type === 'bot' ? '4px solid #8b4513' : 'none',
+            borderRight: msg.type === 'user' ? '4px solid #4a4a4a' : 'none',
+            alignSelf: msg.type === 'user' ? 'flex-end' : 'flex-start',
+            maxWidth: '80%'
           }}>
-            <strong style={{ color: '#8b4513' }}>
+            <strong style={{ color: '#8b4513', display: 'block', marginBottom: '5px' }}>
               {msg.type === 'bot' ? 'Musashi' : 'You'}
             </strong>
-            <p style={{ margin: '5px 0 0 0' }}>{msg.text}</p>
-            <small style={{ color: '#666', fontSize: '0.8rem' }}>{msg.timestamp}</small>
+            <p style={{ margin: 0, lineHeight: '1.5' }}>{msg.text}</p>
+            <small style={{ color: '#666', fontSize: '0.7rem', display: 'block', marginTop: '5px' }}>
+              {msg.timestamp}
+            </small>
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
-    {/* Input Area */}
+
+      {/* Chat Input */}
       <div style={{ 
         width: '100%', 
         maxWidth: '600px', 
@@ -117,9 +132,9 @@ export default function App() {
       }}>
         <input 
           type="text" 
-          value={inputText}                 // 1. Controlled by State
-          onChange={handleInputChange}      // 2. Updates State
-          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()} // Allow pressing Enter
+          value={inputText}                 
+          onChange={handleInputChange}      
+          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()} 
           placeholder="Type your message..."
           style={{
             flex: 1,
@@ -132,8 +147,8 @@ export default function App() {
           }}
         />
         <button 
-          onClick={handleSendMessage}       // 3. Triggers the send logic
-          disabled={isLoading}              // Disable if waiting for bot
+          onClick={handleSendMessage}       
+          disabled={isLoading}              
           style={{
             padding: '12px 20px',
             borderRadius: '8px',
@@ -149,6 +164,7 @@ export default function App() {
           {isLoading ? '...' : <Send size={20} />}
         </button>
       </div>
+
     </div>
   );
 }
