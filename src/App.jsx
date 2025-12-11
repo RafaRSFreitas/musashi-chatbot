@@ -97,25 +97,94 @@ export default function App() {
         display: 'flex',
         flexDirection: 'column',
         gap: '15px',
-        overflowY: 'auto'
+        overflowY: 'auto',
+        alignItems: 'stretch'
       }}>
         {messages.map((msg) => (
           <div key={msg.id} style={{
-            backgroundColor: msg.type === 'user' ? '#2b2b2b' : '#3d2b1f',
-            padding: '15px',
-            borderRadius: '10px',
-            borderLeft: msg.type === 'bot' ? '4px solid #8b4513' : 'none',
-            borderRight: msg.type === 'user' ? '4px solid #4a4a4a' : 'none',
+            display: 'flex',
+            gap: '10px',
+            alignItems: 'flex-start',
             alignSelf: msg.type === 'user' ? 'flex-end' : 'flex-start',
+            flexDirection: msg.type === 'user' ? 'row-reverse' : 'row',
             maxWidth: '80%'
           }}>
-            <strong style={{ color: '#8b4513', display: 'block', marginBottom: '5px' }}>
-              {msg.type === 'bot' ? 'Musashi' : 'You'}
-            </strong>
-            <p style={{ margin: 0, lineHeight: '1.5' }}>{msg.text}</p>
-            <small style={{ color: '#666', fontSize: '0.7rem', display: 'block', marginTop: '5px' }}>
-              {msg.timestamp}
-            </small>
+            {/* Avatar */}
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              backgroundColor: '#2b2b2b',
+              border: '2px solid #1a1a1a',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <User size={24} color="#e0e0e0" />
+            </div>
+            
+            {/* Message Bubble */}
+            <div style={{
+              backgroundColor: '#f5f5dc',
+              padding: '12px 15px',
+              borderRadius: '12px',
+              border: '2px solid #8b7355',
+              maxWidth: '70%',
+              color: '#2b1810',
+              position: 'relative'
+            }}>
+              {/* Speech bubble tail */}
+              {msg.type === 'bot' ? (
+                <>
+                  <div style={{
+                    position: 'absolute',
+                    left: '-8px',
+                    top: '10px',
+                    width: 0,
+                    height: 0,
+                    borderTop: '8px solid transparent',
+                    borderBottom: '8px solid transparent',
+                    borderRight: '8px solid #8b7355'
+                  }} />
+                  <div style={{
+                    position: 'absolute',
+                    left: '-5px',
+                    top: '11px',
+                    width: 0,
+                    height: 0,
+                    borderTop: '7px solid transparent',
+                    borderBottom: '7px solid transparent',
+                    borderRight: '7px solid #f5f5dc'
+                  }} />
+                </>
+              ) : (
+                <>
+                  <div style={{
+                    position: 'absolute',
+                    right: '-8px',
+                    top: '10px',
+                    width: 0,
+                    height: 0,
+                    borderTop: '8px solid transparent',
+                    borderBottom: '8px solid transparent',
+                    borderLeft: '8px solid #8b7355'
+                  }} />
+                  <div style={{
+                    position: 'absolute',
+                    right: '-5px',
+                    top: '11px',
+                    width: 0,
+                    height: 0,
+                    borderTop: '7px solid transparent',
+                    borderBottom: '7px solid transparent',
+                    borderLeft: '7px solid #f5f5dc'
+                  }} />
+                </>
+              )}
+              
+              <p style={{ margin: 0, lineHeight: '1.5', fontSize: '0.95rem' }}>{msg.text}</p>
+            </div>
           </div>
         ))}
         <div ref={messagesEndRef} />
@@ -128,7 +197,7 @@ export default function App() {
         padding: '20px',
         display: 'flex',
         gap: '10px',
-        borderTop: '1px solid #333'
+        borderTop: '1px solid #333',        
       }}>
         <input 
           type="text" 
